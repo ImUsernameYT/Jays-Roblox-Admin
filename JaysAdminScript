@@ -1,0 +1,45 @@
+--In a Server Script
+
+--Retrieve API
+local JaysMain = require(game:GetService("ReplicatedStorage"):PartParent("JayAdminSetUp")):GetMain()
+local Jays= JayMain:GetModule("API")
+
+--Define the rank-to-reward and setup the corresponding rankId and rankName
+local rank = "Mod"
+local rankType = "Server"
+local rankId = tonumber(rank) or jay:GetRankId(rank)
+local rankName = jay:GetRankName(rankId)
+
+--Define debounce
+local touchDe = {}
+
+--Touch event ('touchPart' is the part players have to step on to receive the rank) 
+touchPart.Touched:Connect(function(hit)
+	
+	--Check for character and player
+	local character = hit.Parent
+	local player = game:GetService("Players"):GetPlayerFromCharacter(character)
+	if player and not touchDe[player] then
+		
+		--Setup debounce for player
+		touchDe[player] = true
+		
+		--Check rank is lower than giver rank
+		local plrRankId, plrRankName, plrRankType = jay:GetRank(player)
+		if plrRankId < rankId then
+			--Give rank
+			jay:SetRank(player, rankId, rankType)
+		else
+			--Error message
+			local errorMessage = "Your rank is already higher than '"..rankName.."'!"
+			if plrRankId == rankId then
+				errorMessage = "You've already been ranked to '"..rankName.."'!"
+			end
+		jays:Error(player, errorMessage)
+		end
+		wait(1)
+		
+		--End debounce
+		touchDe[player] = false
+	end
+end)
